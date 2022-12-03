@@ -29,7 +29,8 @@ class QFPWizard(FootprintWizardBase.FootprintWizard):
         return "Quad Flat Package (QFP) footprint wizard"
 
     def GenerateParameterList(self):
-        self.AddParam("Pads", "n", self.uInteger, 100, multiple=4, min_value=4)
+        self.AddParam("Pads", "nx", self.uInteger, 25)
+        self.AddParam("Pads", "ny", self.uInteger, 25)
         self.AddParam("Pads", "pitch", self.uMM, 0.5, designator='e')
         self.AddParam("Pads", "width", self.uMM, 0.25, designator='X1')
         self.AddParam("Pads", "length", self.uMM, 1.5, designator='Y1')
@@ -70,9 +71,10 @@ class QFPWizard(FootprintWizardBase.FootprintWizard):
         v_pitch = self.pads["vertical spacing"]
         h_pitch = self.pads["horizontal spacing"]
 
-        pads_per_row = int(self.pads["n"] // 4)
+        pads_per_row_x = self.pads["nx"]
+        pads_per_row_y = self.pads["ny"]
 
-        row_len = (pads_per_row - 1) * pad_pitch
+        row_len = (pads_per_row_x - 1) * pad_pitch
 
         pad_shape = pcbnew.PAD_SHAPE_OVAL if self.pads["oval"] else pcbnew.PAD_SHAPE_RECT
 
@@ -82,28 +84,28 @@ class QFPWizard(FootprintWizardBase.FootprintWizard):
 
         #left row
         pin1Pos = pcbnew.VECTOR2I( (int)(-h_pitch / 2), 0)
-        array = PA.PadLineArray(h_pad, pads_per_row, pad_pitch, True, pin1Pos)
+        array = PA.PadLineArray(h_pad, pads_per_row_y, pad_pitch, True, pin1Pos)
         array.SetFirstPadInArray(1)
         array.AddPadsToModule(self.draw)
 
         #bottom row
         pin1Pos = pcbnew.VECTOR2I( 0, (int)(v_pitch / 2) )
-        array = PA.PadLineArray(v_pad, pads_per_row, pad_pitch, False, pin1Pos)
-        array.SetFirstPadInArray(pads_per_row + 1)
+        array = PA.PadLineArray(v_pad, pads_per_row_x, pad_pitch, False, pin1Pos)
+        array.SetFirstPadInArray(pads_per_row_y + 1)
         array.AddPadsToModule(self.draw)
 
         #right row
         pin1Pos = pcbnew.VECTOR2I( (int)(h_pitch / 2), 0)
-        array = PA.PadLineArray(h_pad, pads_per_row, -pad_pitch, True,
+        array = PA.PadLineArray(h_pad, pads_per_row_y, -pad_pitch, True,
                                 pin1Pos)
-        array.SetFirstPadInArray(2*pads_per_row + 1)
+        array.SetFirstPadInArray(pads_per_row_y + pads_per_row_x + 1)
         array.AddPadsToModule(self.draw)
 
         #top row
         pin1Pos = pcbnew.VECTOR2I(0, (int)(-v_pitch / 2) )
-        array = PA.PadLineArray(v_pad, pads_per_row, -pad_pitch, False,
+        array = PA.PadLineArray(v_pad, pads_per_row_x, -pad_pitch, False,
                                 pin1Pos)
-        array.SetFirstPadInArray(3*pads_per_row + 1)
+        array.SetFirstPadInArray(2*pads_per_row_y + pads_per_row_x + 1)
         array.AddPadsToModule(self.draw)
 
         offset = pcbnew.FromMM(0.15)
