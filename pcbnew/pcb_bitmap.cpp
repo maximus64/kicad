@@ -44,7 +44,8 @@
 
 
 PCB_BITMAP::PCB_BITMAP( BOARD_ITEM* aParent, const VECTOR2I& pos, PCB_LAYER_ID aLayer ) :
-        BOARD_ITEM( aParent, PCB_BITMAP_T, aLayer )
+        BOARD_ITEM( aParent, PCB_BITMAP_T, aLayer ),
+        m_filename("FILE_NAME_MISSING")
 {
     m_pos = pos;
     m_image = new BITMAP_BASE();
@@ -57,6 +58,7 @@ PCB_BITMAP::PCB_BITMAP( const PCB_BITMAP& aPCBBitmap ) : BOARD_ITEM( aPCBBitmap 
     m_pos = aPCBBitmap.m_pos;
     m_image = new BITMAP_BASE( *aPCBBitmap.m_image );
     m_image->SetPixelSizeIu( (float) pcbIUScale.MilsToIU( 1000 ) / m_image->GetPPI() );
+    m_filename = aPCBBitmap.m_filename;
 }
 
 
@@ -76,6 +78,7 @@ PCB_BITMAP& PCB_BITMAP::operator=( const BOARD_ITEM& aItem )
         m_image = new BITMAP_BASE( *bitmap->m_image );
         m_pos = bitmap->m_pos;
         m_image->SetPixelSizeIu( (float) pcbIUScale.MilsToIU( 1000 ) / m_image->GetPPI() );
+        m_filename = bitmap->GetImageFileName();
     }
 
     return *this;
@@ -84,6 +87,7 @@ PCB_BITMAP& PCB_BITMAP::operator=( const BOARD_ITEM& aItem )
 
 bool PCB_BITMAP::ReadImageFile( const wxString& aFullFilename )
 {
+    m_filename = aFullFilename;
     return m_image->ReadImageFile( aFullFilename );
 }
 
@@ -103,6 +107,7 @@ void PCB_BITMAP::swapData( BOARD_ITEM* aItem )
     PCB_BITMAP* item = (PCB_BITMAP*) aItem;
     std::swap( m_pos, item->m_pos );
     std::swap( m_image, item->m_image );
+    std::swap( m_filename, item->m_filename );
 }
 
 

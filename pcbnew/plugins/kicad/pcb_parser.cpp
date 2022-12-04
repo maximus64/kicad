@@ -2880,30 +2880,11 @@ PCB_BITMAP* PCB_PARSER::parsePCB_BITMAP( BOARD_ITEM* aParent )
 
         case T_data:
         {
-            token = NextTok();
+            NextTok();
+            wxString path = FromUTF8();
+            NeedRIGHT();
 
-            wxString data;
-
-            // Reserve 128K because most image files are going to be larger than the default
-            // 1K that wxString reserves.
-            data.reserve( 1 << 17 );
-
-            while( token != T_RIGHT )
-            {
-                if( !IsSymbol( token ) )
-                    Expecting( "base64 image data" );
-
-                data += FromUTF8();
-                token = NextTok();
-            }
-
-            wxMemoryBuffer       buffer = wxBase64Decode( data );
-            wxMemoryOutputStream stream( buffer.GetData(), buffer.GetBufSize() );
-            wxImage*             image = new wxImage();
-            wxMemoryInputStream  istream( stream );
-            image->LoadFile( istream, wxBITMAP_TYPE_PNG );
-            bitmap->GetImage()->SetImage( image );
-            bitmap->GetImage()->SetBitmap( new wxBitmap( *image ) );
+            bitmap->ReadImageFile( path );
             break;
         }
 

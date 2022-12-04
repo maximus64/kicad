@@ -947,32 +947,9 @@ void PCB_PLUGIN::format( const PCB_BITMAP* aBitmap, int aNestLevel ) const
         m_out->Print( 0, " (scale %g)", aBitmap->GetImage()->GetScale() );
 
     m_out->Print( 0, "\n" );
+    m_out->Print( aNestLevel + 1, "(data \"%s\")", TO_UTF8(aBitmap->GetImageFileName()) );
 
-    m_out->Print( aNestLevel + 1, "(data" );
-
-    wxMemoryOutputStream stream;
-
-    image->SaveFile( stream, wxBITMAP_TYPE_PNG );
-
-    // Write binary data in hexadecimal form (ASCII)
-    wxStreamBuffer* buffer = stream.GetOutputStreamBuffer();
-    wxString out = wxBase64Encode( buffer->GetBufferStart(), buffer->GetBufferSize() );
-
-    // Apparently the MIME standard character width for base64 encoding is 76 (unconfirmed)
-    // so use it in a vein attempt to be standard like.
-#define MIME_BASE64_LENGTH 76
-
-    size_t first = 0;
-
-    while( first < out.Length() )
-    {
-        m_out->Print( 0, "\n" );
-        m_out->Print( aNestLevel + 2, "%s", TO_UTF8( out( first, MIME_BASE64_LENGTH ) ) );
-        first += MIME_BASE64_LENGTH;
-    }
-
-    m_out->Print( 0, "\n" );
-    m_out->Print( aNestLevel + 1, ")\n" );  // Closes data token.
+    printf("MAXIMUS64: debug image file name: %s\n", TO_UTF8(aBitmap->GetImageFileName()) );
     m_out->Print( aNestLevel, ")\n" );      // Closes image token.
 }
 

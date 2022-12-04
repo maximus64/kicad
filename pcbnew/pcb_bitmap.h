@@ -126,12 +126,17 @@ public:
     void Show( int nestLevel, std::ostream& os ) const override;
 #endif
 
+    wxString GetImageFileName( void ) const {
+        return m_filename;
+    }
+
 protected:
     void swapData( BOARD_ITEM* aItem ) override;
 
 private:
     VECTOR2I     m_pos;   // XY coordinates of center of the bitmap
     BITMAP_BASE* m_image; // the BITMAP_BASE item
+    wxString     m_filename; // image file name
 };
 
 #endif // _PCB_BITMAP_H_
