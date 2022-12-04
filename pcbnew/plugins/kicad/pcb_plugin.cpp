@@ -54,6 +54,7 @@
 #include <wx/log.h>
 #include <zone.h>
 #include <zones.h>
+#include <filename_resolver.h>
 
 // For some reason wxWidgets is built with wxUSE_BASE64 unset so expose the wxWidgets
 // base64 code. Needed for PCB_BITMAP
@@ -972,33 +973,17 @@ void PCB_PLUGIN::format( const PCB_BITMAP* aBitmap, int aNestLevel ) const
     if( aBitmap->GetImage()->GetScale() != 1.0 )
         m_out->Print( 0, " (scale %g)", aBitmap->GetImage()->GetScale() );
 
-    m_out->Print( 0, "\n" );
 
-    m_out->Print( aNestLevel + 1, "(data" );
+    std::unique_ptr<FILENAME_RESOLVER> resolver = std::make_unique<FILENAME_RESOLVER>();
+    resolver->Set3DConfigDir( wxT( "" ) );
+    // needed to add the project to the search stack
+    resolver->SetProject( m_board->GetProject() );
+    resolver->SetProgramBase( &Pgm() );
 
-    wxMemoryOutputStream stream;
-
-    image->SaveFile( stream, wxBITMAP_TYPE_PNG );
-
-    // Write binary data in hexadecimal form (ASCII)
-    wxStreamBuffer* buffer = stream.GetOutputStreamBuffer();
-    wxString out = wxBase64Encode( buffer->GetBufferStart(), buffer->GetBufferSize() );
-
-    // Apparently the MIME standard character width for base64 encoding is 76 (unconfirmed)
-    // so use it in a vein attempt to be standard like.
-#define MIME_BASE64_LENGTH 76
-
-    size_t first = 0;
-
-    while( first < out.Length() )
-    {
-        m_out->Print( 0, "\n" );
-        m_out->Print( aNestLevel + 2, "%s", TO_UTF8( out( first, MIME_BASE64_LENGTH ) ) );
-        first += MIME_BASE64_LENGTH;
-    }
+    auto short_path = resolver->ShortenPath(aBitmap->GetImageFileName());
 
     m_out->Print( 0, "\n" );
-    m_out->Print( aNestLevel + 1, ")\n" );  // Closes data token.
+    m_out->Print( aNestLevel + 1, "(data \"%s\")", TO_UTF8(short_path) );
     m_out->Print( aNestLevel, ")\n" );      // Closes image token.
 }
 

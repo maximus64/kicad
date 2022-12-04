@@ -63,6 +63,7 @@
 #include <progress_reporter.h>
 #include <board_stackup_manager/stackup_predefined_prms.h>
 #include <pgm_base.h>
+#include <filename_resolver.h>
 
 // For some reason wxWidgets is built with wxUSE_BASE64 unset so expose the wxWidgets
 // base64 code. Needed for PCB_BITMAP
@@ -2891,29 +2892,19 @@ PCB_BITMAP* PCB_PARSER::parsePCB_BITMAP( BOARD_ITEM* aParent )
 
         case T_data:
         {
-            token = NextTok();
+            NextTok();
+            wxString path = FromUTF8();
+            NeedRIGHT();
 
-            wxString data;
+            std::unique_ptr<FILENAME_RESOLVER> resolver = std::make_unique<FILENAME_RESOLVER>();
+            resolver->Set3DConfigDir( wxT( "" ) );
+            // needed to add the project to the search stack
+            resolver->SetProject( m_board->GetProject() );
+            resolver->SetProgramBase( &Pgm() );
 
-            // Reserve 128K because most image files are going to be larger than the default
-            // 1K that wxString reserves.
-            data.reserve( 1 << 17 );
+            auto resolve_path = resolver->ResolvePath( path, wxEmptyString );
 
-            while( token != T_RIGHT )
-            {
-                if( !IsSymbol( token ) )
-                    Expecting( "base64 image data" );
-
-                data += FromUTF8();
-                token = NextTok();
-            }
-
-            wxMemoryBuffer       buffer = wxBase64Decode( data );
-            wxMemoryOutputStream stream( buffer.GetData(), buffer.GetBufSize() );
-            wxImage*             image = new wxImage();
-            wxMemoryInputStream  istream( stream );
-            image->LoadFile( istream, wxBITMAP_TYPE_PNG );
-            bitmap->SetImage( image );
+            bitmap->ReadImageFile( resolve_path );
             break;
         }
 
