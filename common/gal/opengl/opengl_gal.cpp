@@ -71,7 +71,7 @@ using namespace KIGFX;
 //  - handle rotated bitmaps without create a new cached item
 //  - add a "garbage collector" to delete not existing BITMAP_BASE items
 // After tests, caching bitmaps do not speedup significantly drawings.
-#define DISABLE_BITMAP_CACHE
+//#define DISABLE_BITMAP_CACHE
 
 // The current font is "Ubuntu Mono" available under Ubuntu Font Licence 1.0
 // (see ubuntu-font-licence-1.0.txt for details)
