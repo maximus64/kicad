@@ -102,7 +102,6 @@ private:
     GLuint cacheBitmap( const BITMAP_BASE* aBitmap );
 
     const size_t m_cacheMaxElements = 50;
-    const size_t m_cacheMaxSize     = 256 * 1024 * 1024;
 
     std::map<const KIID, CACHED_BITMAP> m_bitmaps;
     std::list<KIID> m_cacheLru;
@@ -219,8 +218,7 @@ GLuint GL_BITMAP_CACHE::cacheBitmap( const BITMAP_BASE* aBitmap )
     m_cacheSize += bmp.size;
     m_bitmaps.emplace( aBitmap->GetImageID(), std::move( bmp ) );
 
-    if( m_cacheLru.size() > m_cacheMaxElements
-        || m_cacheSize > m_cacheMaxSize )
+    if( m_cacheLru.size() > m_cacheMaxElements )
     {
         KIID last = m_cacheLru.front();
         CACHED_BITMAP& cachedBitmap = m_bitmaps[last];
